@@ -1,0 +1,47 @@
+# Dependencies (Never commit these, they are managed via package.json)
+node_modules/
+jspm_packages/
+bower_components/
+
+# Environment Variables and Secrets (Crucial to prevent API key leaks)
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+*.env
+
+# Logs and Debug files
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Diagnostic reports (Next.js / Node.js crash dumps)
+report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Build outputs and Caches
+dist/
+build/
+.npm
+.eslintcache
+.parcel-cache
+
+# Testing and Coverage tracking
+coverage/
+.nyc_output/
+
+# Operating System Files
+.DS_Store
+.DS_Store?
+Thumbs.db
+ehthumbs.db
+Desktop.ini

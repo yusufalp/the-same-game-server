@@ -1,0 +1,23 @@
+{
+  "name": "the-same-game-server",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yusufalp/the-same-game-server.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/yusufalp/the-same-game-server/issues"
+  },
+  "homepage": "https://github.com/yusufalp/the-same-game-server#readme",
+  "dependencies": {
+    "express": "^5.2.1"
+  }
+}
