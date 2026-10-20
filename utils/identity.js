@@ -49,3 +49,9 @@ export function getIdentity(req) {
     "Send a login token, or x-anonymous-id header containing a UUID.",
   );
 }
+
+export function getOptionalIdentity(req) {
+  return req.get("authorization") || req.get("x-anonymous-id")
+    ? getIdentity(req)
+    : null;
+}
