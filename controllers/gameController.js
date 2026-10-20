@@ -1,12 +1,24 @@
 import { withTransaction } from "../config/db.js";
 
-import { insertGame, resolvePlayerIdentity } from "../services/gameService.js";
+import {
+  insertGame,
+  loadGameContext,
+  readGameState,
+  resolvePlayerIdentity,
+} from "../services/gameService.js";
 
 import { buildLobby } from "../utils/lobby.js";
 import { pickDisplayName } from "../utils/displayName.js";
-import { getIdentity } from "../utils/identity.js";
+import { getIdentity, getOptionalIdentity } from "../utils/identity.js";
 import { normalizeGameCode } from "../utils/gameCode.js";
 import { HttpError } from "../utils/HttpError.js";
+import {
+  addComputers,
+  computerStep,
+  resolveTurn,
+  spin,
+  startGame,
+} from "../services/gameplayService.js";
 
 /** POST /api/games
  * Identity: Authorization: Bearer <token>  OR  X-Anonymous-Id: <uuid>
@@ -144,11 +156,103 @@ export async function joinGameByCode(req, res, next) {
   }
 }
 
-export function getGameById() {}
-export function startGameById() {}
-export function performSpinByGameId() {}
-export function flipCardByGameId() {}
-export function endTurnByGameId() {}
-export function getPlayersByGameId() {}
-export function computerMoveByGameId() {}
-export function leaveGameById() {}
+/** GET /api/:gameCode
+ * The current state of the game. Poll this to keep every player in sync.
+ */
+export async function getGameByCode(req, res, next) {
+  try {
+    const gameCode = normalizeGameCode(req.params.gameCode);
+    const identity = getOptionalIdentity(req);
+
+    const {
+      rows: [game],
+    } = await pool.query(
+      `
+      select id from games where game_code = $1
+      `,
+      [gameCode],
+    );
+
+    if (!game) throw new HttpError(404, "Game not found.");
+
+    req.status(200).json(await readGameState(pool, game.id, identity));
+  } catch (error) {
+    next(error);
+  }
+}
+
+// Shared flow for every action: identify the player, lock the game row,
+// run the action, then respond with the fresh game state.
+function gameAction(action, { hostOnly = false } = {}) {
+  return async (req, res, next) => {
+    try {
+      const identity = getIdentity(req);
+      const gameCode = normalizeGameCode(req.params.gameCode);
+
+      const state = await withTransaction(async (client) => {
+        const { game, players, me } = await loadGameContext(
+          client,
+          gameCode,
+          identity,
+        );
+
+        if (hostOnly && !me.is_host) {
+          throw new HttpError(403, "Only the host can do that.");
+        }
+
+        await action({ client, game, players, me, body: req.body ?? {} });
+        return readGameState(client, game.id, identity);
+      });
+
+      res.json(state);
+    } catch (error) {
+      next(error);
+    }
+  };
+}
+
+/** POST /api/games/:gameCode/computers   (host)
+ * Fills open seats with computer players. Default: every open seat.
+ * Body: { count?: number }
+ */
+export const addComputerPlayers = gameAction(
+  ({ client, game, players, body }) =>
+    addComputers(client, game, players, body.count),
+  { hostOnly: true },
+);
+
+/** POST /api/games/:gameCode/start   (host)
+ * Shuffles the cards and starts the first turn. Needs every seat filled.
+ */
+export const startGameByCode = gameAction(
+  ({ client, game, players }) => startGame(client, game, players),
+  { hostOnly: true },
+);
+
+/** POST /api/games/:gameCode/spin   (current player)
+ * Spin the spinner once per turn.
+ */
+export const performSpinByCode = gameAction(({ client, game, me }) =>
+  spin(client, game, me),
+);
+
+/** POST /api/games/:gameCode/flip   (current player)   Body: { slot: 1-36 }
+ */
+export const flipCardByGameCode = gameAction(({ client, game, me, body }) =>
+  flipCard(client, game, me, body.slot),
+);
+
+/** POST /api/games/:gameCode/end-turn   (current player)
+ * After two cards are flipped: take them if they match, otherwise pass the turn.
+ */
+export const endTurnByCode = gameAction(({ client, game, players, me }) =>
+  resolveTurn(client, game, players, me),
+);
+
+/** POST /api/games/:gameCode/computer-move   (host)
+ * Performs one step of the computer player whose turn it is.
+ */
+export const computerMoveByGameCode = gameAction(
+  ({ client, game, players }) => computerStep(client, game, players),
+  { hostOnly: true },
+);
