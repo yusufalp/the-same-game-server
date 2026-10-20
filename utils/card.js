@@ -36,7 +36,7 @@ export function availableAttributes(cards) {
 
 // The spinner only lands on an attribute that still has a possible match,
 // so a player is never handed an impossible turn. Null = no match is possible.
-export function pickSpinnerAttribute(cards) {
+export function pickSpinAttribute(cards) {
   const options = availableAttributes(cards);
   return options.length ? randomItem(options) : null;
 }
