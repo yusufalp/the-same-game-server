@@ -1,9 +1,14 @@
 import { Router } from "express";
 import {
-  getPlayersByGameId,
+  addComputerPlayers,
+  computerMoveByGameCode,
+  endTurnByGameCode,
+  flipCardByGameCode,
+  getGameByCode,
   hostGame,
   joinGameByCode,
-  leaveGameById,
+  performSpinByGameCode,
+  startGameByCode,
 } from "../controllers/gameController.js";
 
 const router = Router();
@@ -19,7 +24,7 @@ router.post("/:gameCode/flip", flipCardByGameCode);
 router.post("/:gameCode/end-turn", endTurnByGameCode);
 router.post("/:gameCode/computer-move", computerMoveByGameCode);
 
-router.get("/:gameCode/players", getPlayersByGameId);
-router.post("/:gameCode/leave", leaveGameById);
+// router.get("/:gameCode/players", getPlayersByGameId);
+// router.post("/:gameCode/leave", leaveGameById);
 
 export default router;

@@ -82,9 +82,7 @@ export async function loadGameContext(client, gameCode, identity) {
   );
   if (!game) throw new HttpError(404, "Game not found.");
 
-  const {
-    rows: [players],
-  } = await client.query(
+  const { rows: players } = await client.query(
     `
     select * from players where game_id = $1 order by seat
     `,
@@ -107,9 +105,7 @@ export async function readGameState(db, gameId, identity = null) {
     [gameId],
   );
 
-  const {
-    rows: [players],
-  } = await db.query(
+  const { rows: players } = await db.query(
     `
     select * from players where game_id = $1 order by seat
     `,

@@ -1,7 +1,7 @@
-import { finishGame, markGameStarted } from "./gameService";
-import { pickComputerSlot, pickSpinAttribute, shuffle } from "../utils/card";
-import { pickDisplayName } from "../utils/displayName";
-import { HttpError } from "../utils/HttpError";
+import { finishGame, markGameStarted } from "./gameService.js";
+import { pickComputerSlot, pickSpinAttribute, shuffle } from "../utils/card.js";
+import { pickDisplayName } from "../utils/displayName.js";
+import { HttpError } from "../utils/HttpError.js";
 
 // The game rules. Every function takes a transaction `client`, the locked
 // `game` row and (where needed) the players, and changes the database.
@@ -44,7 +44,7 @@ export async function addComputers(client, game, players, count) {
       "Computer players can only join while seats are open.",
     );
 
-  const openSeats = (game.max_players = players.length);
+  const openSeats = game.max_players - players.length;
   if (openSeats <= 0) throw new HttpError(409, "There are no empty seats.");
 
   const requested = count === undefined ? openSeats : Number(count);
