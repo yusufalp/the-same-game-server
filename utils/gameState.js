@@ -19,7 +19,7 @@ export function buildGameState(game, players, cards, viewer = null) {
       isYourTurn:
         game.status === "playing" && viewer.seat === game.current_seat,
     },
-    boards: cards.map((c) => {
+    board: cards.map((c) => {
       const isMatched = Boolean(c.matched_at);
 
       const isFaceUp = c.is_face_up || isMatched;
