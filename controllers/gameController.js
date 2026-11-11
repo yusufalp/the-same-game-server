@@ -1,4 +1,4 @@
-import { withTransaction } from "../config/db.js";
+import { pool, withTransaction } from "../config/db.js";
 
 import {
   insertGame,
@@ -175,7 +175,7 @@ export async function getGameByCode(req, res, next) {
 
     if (!game) throw new HttpError(404, "Game not found.");
 
-    req.status(200).json(await readGameState(pool, game.id, identity));
+    res.status(200).json(await readGameState(pool, game.id, identity));
   } catch (error) {
     next(error);
   }
@@ -232,7 +232,7 @@ export const startGameByCode = gameAction(
 /** POST /api/games/:gameCode/spin   (current player)
  * Spin the spinner once per turn.
  */
-export const performSpinByCode = gameAction(({ client, game, me }) =>
+export const performSpinByGameCode = gameAction(({ client, game, me }) =>
   spin(client, game, me),
 );
 
@@ -245,7 +245,7 @@ export const flipCardByGameCode = gameAction(({ client, game, me, body }) =>
 /** POST /api/games/:gameCode/end-turn   (current player)
  * After two cards are flipped: take them if they match, otherwise pass the turn.
  */
-export const endTurnByCode = gameAction(({ client, game, players, me }) =>
+export const endTurnByGameCode = gameAction(({ client, game, players, me }) =>
   resolveTurn(client, game, players, me),
 );
 
