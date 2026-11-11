@@ -134,7 +134,7 @@ export async function readGameState(db, gameId, identity = null) {
 export async function markGameStarted(client, gameId, firstSeat) {
   await client.query(
     `
-    update games set status = 'playing', started_at = now(), current_seat = $2, current_spin = null, where id = $1
+    update games set status = 'playing', started_at = now(), current_seat = $2, current_spin = null where id = $1
     `,
     [gameId, firstSeat],
   );
@@ -157,7 +157,7 @@ export async function finishGame(client, gameId) {
 
   await client.query(
     `
-    update games set status = 'finished', finished_at = now(), current_seat = null, current_spin = null, where id = $1
+    update games set status = 'finished', finished_at = now(), current_seat = null, current_spin = null where id = $1
     `,
     [gameId],
   );

@@ -95,9 +95,7 @@ export async function startGame(client, game, players) {
     );
   }
 
-  const {
-    rows: [cards],
-  } = await client.query(
+  const { rows: cards } = await client.query(
     `
     select id from cards order by id
     `,
