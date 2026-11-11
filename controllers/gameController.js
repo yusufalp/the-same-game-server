@@ -15,6 +15,7 @@ import { HttpError } from "../utils/HttpError.js";
 import {
   addComputers,
   computerStep,
+  flipCard,
   resolveTurn,
   spin,
   startGame,

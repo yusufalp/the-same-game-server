@@ -1,5 +1,5 @@
 import { finishGame, markGameStarted } from "./gameService.js";
-import { pickComputerSlot, pickSpinAttribute, shuffle } from "../utils/card.js";
+import { cardsMatch, pickComputerSlot, pickSpinAttribute, shuffle } from "../utils/card.js";
 import { pickDisplayName } from "../utils/displayName.js";
 import { HttpError } from "../utils/HttpError.js";
 
@@ -136,7 +136,7 @@ export async function spin(client, game, player) {
 
   await client.query(
     `
-    updates games set current_spin = $2 where id = $1
+    update games set current_spin = $2 where id = $1
     `,
     [game.id, attribute],
   );
@@ -161,9 +161,7 @@ export async function flipCard(client, game, player, slot) {
     );
   }
 
-  const {
-    rows: [board],
-  } = await client.query(
+  const { rows: board } = await client.query(
     `
     select slot, is_face_up, matched_at from game_cards where game_id = $1
     `,
@@ -196,8 +194,8 @@ export async function resolveTurn(client, game, players, player) {
   const { rows: flipped } = await client.query(
     `
     select gc.slot, c.number, c.color, c.category
-    from game_Cards gc
-    join card c on c.id = gc.card_id
+    from game_cards gc
+    join cards c on c.id = gc.card_id
     where gc.game_id = $1 and gc.is_face_up
     order by gc.slot
     `,
@@ -212,7 +210,7 @@ export async function resolveTurn(client, game, players, player) {
   if (cardsMatch(a, b, game.current_spin)) {
     await client.query(
       `
-      update game_cards set is_face_up = false, matched_by = #2, matched_at = now()
+      update game_cards set is_face_up = false, matched_by = $2, matched_at = now()
       where game_id = $1 and slot = any($3::smallint[])
       `,
       [game.id, player.id, [a.slot, b.slot]],
@@ -257,7 +255,7 @@ export async function resolveTurn(client, game, players, player) {
 // end turn. The front end calls this repeatedly with short pauses, so every
 // player can watch the computer play.
 export async function computerStep(client, game, players) {
-  const computer = players.find((p) => p.seat === p.current_seat);
+  const computer = players.find((p) => p.seat === game.current_seat);
   if (game.status !== "playing" || !computer?.is_ai)
     throw new HttpError(409, "It is not a computer player's turn.");
 
