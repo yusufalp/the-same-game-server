@@ -15,6 +15,7 @@ import { HttpError } from "../utils/HttpError.js";
 import {
   addComputers,
   computerStep,
+  endGame,
   flipCard,
   resolveTurn,
   spin,
@@ -255,5 +256,10 @@ export const endTurnByGameCode = gameAction(({ client, game, players, me }) =>
  */
 export const computerMoveByGameCode = gameAction(
   ({ client, game, players }) => computerStep(client, game, players),
+  { hostOnly: true },
+);
+
+export const endGameByGameCode = gameAction(
+  ({ client, game }) => endGame(client, game),
   { hostOnly: true },
 );

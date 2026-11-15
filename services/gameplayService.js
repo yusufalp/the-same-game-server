@@ -1,5 +1,10 @@
 import { finishGame, markGameStarted } from "./gameService.js";
-import { cardsMatch, pickComputerSlot, pickSpinAttribute, shuffle } from "../utils/card.js";
+import {
+  cardsMatch,
+  pickComputerSlot,
+  pickSpinAttribute,
+  shuffle,
+} from "../utils/card.js";
 import { pickDisplayName } from "../utils/displayName.js";
 import { HttpError } from "../utils/HttpError.js";
 
@@ -267,4 +272,19 @@ export async function computerStep(client, game, players) {
 
   const slot = pickComputerSlot(cards, game.current_spin, faceUp[0] ?? null);
   return flipCard(client, game, computer, slot);
+}
+
+export async function endGame(client, game) {
+  if (game.status === "finished") {
+    throw new HttpError(409, "The game is already over.");
+  }
+
+  await client.query(
+    `
+    update game_cards set is_face_up = false where game_id = $1 and is_face_up
+    `,
+    [game.id],
+  );
+
+  await finishGame(client, game.id);
 }

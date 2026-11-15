@@ -2,6 +2,7 @@ import { Router } from "express";
 import {
   addComputerPlayers,
   computerMoveByGameCode,
+  endGameByGameCode,
   endTurnByGameCode,
   flipCardByGameCode,
   getGameByCode,
@@ -23,6 +24,7 @@ router.post("/:gameCode/spin", performSpinByGameCode);
 router.post("/:gameCode/flip", flipCardByGameCode);
 router.post("/:gameCode/end-turn", endTurnByGameCode);
 router.post("/:gameCode/computer-move", computerMoveByGameCode);
+router.post("/:gameCode/end", endGameByGameCode);
 
 // router.get("/:gameCode/players", getPlayersByGameId);
 // router.post("/:gameCode/leave", leaveGameById);
